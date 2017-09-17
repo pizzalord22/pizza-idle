@@ -1,0 +1,23 @@
+*{
+    margin: 0;
+}
+
+.shop{
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 20%;
+}
+
+.shopitems{
+    float: right;
+}
+
+.shopButton{
+    cursor: pointer;
+    user-select: none;
+    background-color: deepskyblue;
+    padding: 10px;
+    border: 3px dashed;
+    margin: 8px;
+}
