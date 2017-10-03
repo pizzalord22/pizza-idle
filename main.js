@@ -1,49 +1,72 @@
 /**
- * add an upgrade menu
- * add upgrades
- * create all buttons with html and then edit them with javascript
+ * an upgrade of a higher level will upgrade all upgrades below it
+ * for example the oven upgrade will also upgrade the baker multiplier
+ * and a restaurant upgrade will also upgrade the oven multiplier
+ * normal upgrade is multiplier + 2, previous upgade multiplier is * 2
+ *
+ *
+ *---------------------------------------------------------------------
+ *
+ * show points with "k", "m" etc so that the numbers are smaller
+ *
  * @type {number}
  */
 
 // starting income timer
 var incomeTimer = 1000;
-
 // income upgrades, this is bugging out
 var bakers = Number(readCookie("bakers"));
 var ovens = Number(readCookie("ovens"));
 var restaurants = Number(readCookie("restaurants"));
+var restaurant_chains = Number(readCookie("restaurant_chains"));
 
 // upgrade point gain
 var baker_multiplier = 1;
 var oven_multiplier = 1;
 var restaurant_multiplier = 1;
+var restaurant_chains_multiplier = 1;
 
-//upgrades check
-var b1 = false;
-var b2 = false;
-var b3 = false;
-var b4 = false;
-var b5 = false;
-var b6 = false;
-var o1 = false;
-var o2 = false;
-var o3 = false;
-var o4 = false;
-var o5 = false;
-var od = false;
-var r1 = false;
-var r2 = false;
-var r3 = false;
-var r4 = false;
-var r5 = false;
-var r6 = false;
+var total_income = (bakers * baker_multiplier) + (ovens * 10 * oven_multiplier ) + ( restaurants * 100 * restaurant_multiplier) + ( restaurant_chains * 1000 * restaurant_chains_multiplier);
 
-// initial points
+//upgrades check this is array is used to check if upgrade requirements have been met
+var upgrades_check = {
+    b1: false,
+    b2: false,
+    b3: false,
+    b4: false,
+    b5: false,
+    b6: false,
+    o1: false,
+    o2: false,
+    o3: false,
+    o4: false,
+    o5: false,
+    o6: false,
+    r1: false,
+    r2: false,
+    r3: false,
+    r4: false,
+    r5: false,
+    r6: false,
+    rc1: false,
+    rc2: false,
+    rc3: false,
+    rc4: false,
+    rc5: false,
+    rc6: false
+};
+
+// when there is no cookie for points give the player 10 cookies to start the game
 if (typeof Number(readCookie("points")) !== 'undefined') {
     var points = Number(readCookie("points")) + 10;
 } else {
     points = 10;
 }
+
+// calculate income every 100ms
+setInterval(function () {
+    total_income = (bakers * baker_multiplier) + (ovens * 10 * oven_multiplier ) + ( restaurants * 100 * restaurant_multiplier) + ( restaurant_chains * 1000 * restaurant_chains_multiplier);
+}, 100);
 
 window.onload = function () {
     // load saved vars
@@ -53,6 +76,8 @@ window.onload = function () {
     ovens_owned[0].innerHTML = "Ovens owned:" + ovens;
     var restaurants_owned = document.getElementsByClassName("owned_restaurants");
     restaurants_owned[0].innerHTML = "Restaurants owned: " + restaurants;
+    var restaurant_chains_owned = document.getElementsByClassName("owned_restaurant_chains");
+    restaurant_chains_owned[0].innerHTML = "Restaurant chains owned: " + restaurant_chains;
     var point_load = document.getElementsByClassName("pointAmount");
     point_load[0].innerHTML = points;
     var shop_button = document.getElementById("shopButton1");
@@ -61,6 +86,8 @@ window.onload = function () {
     shop_button2.innerHTML = "Buy an oven " + Math.floor(100 * Math.pow(1 + (25 / 100), ovens)) + " points";
     var shop_button3 = document.getElementById("shopButton3");
     shop_button3.innerHTML = "Buy a retaurant " + Math.floor(1000 * Math.pow(1 + (25 / 100), restaurants)) + " points";
+    var shop_button4 = document.getElementById("shopButton4");
+    shop_button4.innerHTML = "Buy a restaurant chain " + Math.floor(10000 * Math.pow(1 + (25 / 100), restaurant_chains)) + " points";
 
     // add eventListners to all the shop buttons so items can be bought
     document.getElementById("shopButton1").addEventListener("click", function () {
@@ -75,7 +102,7 @@ window.onload = function () {
             upgrade_owned[0].innerHTML = "Bakers owned: " + bakers;
             document.cookie = "bakers=" + bakers + "; expires=Thu, 18 Dec 9999 12:00:00 UTC";
             var Pincome = document.getElementsByClassName("pointIncome");
-            Pincome[0].innerHTML = (bakers * baker_multiplier) + (ovens * 10 * oven_multiplier ) + ( restaurants * 100 * restaurant_multiplier);
+            Pincome[0].innerHTML = total_income;
             document.cookie = "points=" + points + "; expires=Thu, 18 Dec 9999 12:00:00 UTC";
         }
     });
@@ -92,7 +119,7 @@ window.onload = function () {
             upgrade_owned[0].innerHTML = "Ovens owned:" + ovens;
             document.cookie = "ovens=" + ovens + "; expires=Thu, 18 Dec 9999 12:00:00 UTC";
             var Pincome = document.getElementsByClassName("pointIncome");
-            Pincome[0].innerHTML = (bakers * baker_multiplier) + (ovens * 10 * oven_multiplier ) + ( restaurants * 100 * restaurant_multiplier);
+            Pincome[0].innerHTML = total_income;
             document.cookie = "points=" + points + "; expires=Thu, 18 Dec 9999 12:00:00 UTC";
         }
     });
@@ -109,146 +136,215 @@ window.onload = function () {
             upgrades_owned[0].innerHTML = "Restaurants owned: " + restaurants;
             document.cookie = "restaurants=" + restaurants + "; expires=Thu, 18 Dec 9999 12:00:00 UTC";
             var Pincome = document.getElementsByClassName("pointIncome");
-            Pincome[0].innerHTML = (bakers * baker_multiplier) + (ovens * 10 * oven_multiplier ) + ( restaurants * 100 * restaurant_multiplier);
+            Pincome[0].innerHTML = total_income;
+            document.cookie = "points=" + points + "; expires=Thu, 18 Dec 9999 12:00:00 UTC";
+        }
+    });
+
+    document.getElementById("shopButton4").addEventListener("click", function () {
+        if (points >= Math.floor(10000 * Math.pow(1 + (25 / 100), restaurant_chains))) {
+            points -= Math.floor(10000 * Math.pow(1 + (25 / 100), restaurant_chains));
+            restaurant_chains += 1;
+            var shop_button = document.getElementById("shopButton4");
+            shop_button.innerHTML = "Buy a retaurant chain " + Math.floor(10000 * Math.pow(1 + (25 / 100), restaurants)) + " points";
+            var Pamount = document.getElementsByClassName("pointAmount");
+            Pamount[0].innerHTML = points;
+            var upgrades_owned = document.getElementsByClassName("owned_restaurant_chains");
+            upgrades_owned[0].innerHTML = "Restaurant chains owned: " + restaurant_chains;
+            document.cookie = "restaurant_chains=" + restaurant_chains + "; expires=Thu, 18 Dec 9999 12:00:00 UTC";
+            var Pincome = document.getElementsByClassName("pointIncome");
+            Pincome[0].innerHTML = total_income;
             document.cookie = "points=" + points + "; expires=Thu, 18 Dec 9999 12:00:00 UTC";
         }
     });
 };
 
 setInterval(function () {
-    points += (bakers * baker_multiplier) + (ovens * 10 * oven_multiplier ) + ( restaurants * 100 * restaurant_multiplier);
+    points += total_income;
     var elem = document.getElementsByClassName("pointAmount");
     elem[0].innerHTML = points;
     var Pincome = document.getElementsByClassName("pointIncome");
-    Pincome[0].innerHTML = (bakers * baker_multiplier) + (ovens * 10 * oven_multiplier ) + ( restaurants * 100 * restaurant_multiplier);
+    Pincome[0].innerHTML = total_income;
     document.cookie = "points=" + points + "; expires=Thu, 18 Dec 9999 12:00:00 UTC";
 }, incomeTimer);
 
 /**
+ * upgrades the player gets for having a certain amount of income generators (bakers. ovens etc)
  * add the eventlistner when the upgrade button is created
+ * add upgrade for having 10,25,50,75 and 100 of everything
  */
 
 setInterval(function () {
-    if (bakers >= 10 && b1 === false) {
-        var Bupgrade1 = document.getElementsByClassName("show_upgrades");
-        Bupgrade1[0].innerHTML += "<div id='b2' class='upgrade_button'>B1</div>";
-        b1 = true;
+    var upgrade = document.getElementsByClassName("show_upgrades");
+    if (bakers >= 10 && upgrades_check["b1"] === false) {
+        upgrade[0].innerHTML += "<div id='b2' class='upgrade_button'>B1</div>";
+        upgrades_check["b1"] = true;
         baker_multiplier *= 2;
         var Pincome = document.getElementsByClassName("pointIncome");
-        Pincome[0].innerHTML = (bakers * baker_multiplier) + (ovens * 10 * oven_multiplier ) + ( restaurants * 100 * restaurant_multiplier);
+        Pincome[0].innerHTML = total_income;
     }
 
-    if (bakers >= 25) {
-        if (b2 === false) {
-            var Bupgrade2 = document.getElementsByClassName("show_upgrades");
-            Bupgrade2[0].innerHTML += "<div id='b2' class='upgrade_button'>B2</div>";
-            b2 = true;
-            baker_multiplier += 2;
-            Pincome = document.getElementsByClassName("pointIncome");
-            Pincome[0].innerHTML = (bakers * baker_multiplier) + (ovens * 10 * oven_multiplier ) + ( restaurants * 100 * restaurant_multiplier);
-
-        }
+    if (bakers >= 25 && upgrades_check["b2"] === false) {
+        upgrade[0].innerHTML += "<div id='b2' class='upgrade_button'>B2</div>";
+        upgrades_check["b2"] = true;
+        baker_multiplier += 2;
+        Pincome = document.getElementsByClassName("pointIncome");
+        Pincome[0].innerHTML = total_income;
     }
 
-    if (bakers >= 50) {
-        if (b3 === false) {
-            var Bupgrade3 = document.getElementsByClassName("show_upgrades");
-            Bupgrade3[0].innerHTML += "<div id='b3' class='upgrade_button'>B3</div>";
-            b3 = true;
-            baker_multiplier += 2;
-            Pincome = document.getElementsByClassName("pointIncome");
-            Pincome[0].innerHTML = (bakers * baker_multiplier) + (ovens * 10 * oven_multiplier ) + ( restaurants * 100 * restaurant_multiplier);
-
-        }
+    if (bakers >= 50 && upgrades_check["b3"] === false) {
+        upgrade[0].innerHTML += "<div id='b3' class='upgrade_button'>B3</div>";
+        upgrades_check["b3"] = true;
+        baker_multiplier += 2;
+        Pincome = document.getElementsByClassName("pointIncome");
+        Pincome[0].innerHTML = total_income;
     }
 
-    if (bakers >= 75) {
-        if (b4 === false) {
-            var Bupgrade4 = document.getElementsByClassName("show_upgrades");
-            Bupgrade4[0].innerHTML += "<div class='upgrade_button'>B4</div>";
-            b4 = true;
-            baker_multiplier += 2;
-            Pincome = document.getElementsByClassName("pointIncome");
-            Pincome[0].innerHTML = (bakers * baker_multiplier) + (ovens * 10 * oven_multiplier ) + ( restaurants * 100 * restaurant_multiplier);
-        }
+    if (bakers >= 75 && upgrades_check["b4"] === false) {
+        upgrade[0].innerHTML += "<div class='upgrade_button'>B4</div>";
+        upgrades_check["b4"] = true;
+        baker_multiplier += 2;
+        Pincome = document.getElementsByClassName("pointIncome");
+        Pincome[0].innerHTML = total_income;
     }
 
-    if (bakers >= 100 && b5 === false) {
-            var Bupgrade5 = document.getElementsByClassName("show_upgrades");
-            Bupgrade5[0].innerHTML += "<div class='upgrade_button'>B5</div>";
-            b5 = true;
+    if (bakers >= 100 && upgrades_check["b5"] === false) {
+        upgrade[0].innerHTML += "<div class='upgrade_button'>B5</div>";
+        upgrades_check["b5"] = true;
+        Pincome = document.getElementsByClassName("pointIncome");
+        Pincome[0].innerHTML = total_income;
     }
 
-    if (ovens >= 10 && o1 === false) {
-        var Oupgrade1 = document.getElementsByClassName("show_upgrades");
-        Oupgrade1[0].innerHTML += "<div class='upgrade_button'>O1</div>";
+    if (ovens >= 10 && upgrades_check["o1"] === false) {
+        upgrade[0].innerHTML += "<div class='upgrade_button'>O1</div>";
         oven_multiplier *= 2;
-        o1 = true
+        baker_multiplier *= 2;
+        upgrades_check["o1"] = true;
+        Pincome = document.getElementsByClassName("pointIncome");
+        Pincome[0].innerHTML = total_income;
     }
 
-    if (ovens >= 25 && o2 === false) {
-        var Oupgrade2 = document.getElementsByClassName("show_upgrades");
-        Oupgrade2[0].innerHTML += "<div class='upgrade_button'>O2</div>";
+    if (ovens >= 25 && upgrades_check["o2"] === false) {
+        upgrade[0].innerHTML += "<div class='upgrade_button'>O2</div>";
         oven_multiplier += 2;
-        o2 = true
+        baker_multiplier *= 2;
+        upgrades_check["o2"] = true;
+        Pincome = document.getElementsByClassName("pointIncome");
+        Pincome[0].innerHTML = total_income;
     }
 
-    if (ovens >= 50 && o3 === false) {
-        var Oupgrade3 = document.getElementsByClassName("show_upgrades");
-        Oupgrade3[0].innerHTML += "<div class='upgrade_button'>O3</div>";
+    if (ovens >= 50 && upgrades_check["o3"] === false) {
+        upgrade[0].innerHTML += "<div class='upgrade_button'>O3</div>";
         oven_multiplier += 2;
-        o3 = true
+        baker_multiplier *= 2;
+        upgrades_check["o3"] = true;
+        Pincome = document.getElementsByClassName("pointIncome");
+        Pincome[0].innerHTML = total_income;
     }
 
-    if (ovens >= 75 && o4 === false) {
-        var Oupgrade4 = document.getElementsByClassName("show_upgrades");
-        Oupgrade4[0].innerHTML += "<div class='upgrade_button'>O3</div>";
+    if (ovens >= 75 && upgrades_check["o4"] === false) {
+        upgrade[0].innerHTML += "<div class='upgrade_button'>O4</div>";
         oven_multiplier += 2;
-        o4 = true
+        baker_multiplier *= 2;
+        upgrades_check["o4"] = true;
+        Pincome = document.getElementsByClassName("pointIncome");
+        Pincome[0].innerHTML = total_income;
     }
 
-    if (ovens >= 100 && o5 === false) {
-        var Oupgrade5 = document.getElementsByClassName("show_upgrades");
-        Oupgrade5[0].innerHTML += "<div class='upgrade_button'>O4</div>";
+    if (ovens >= 100 && upgrades_check["o5"] === false) {
+        upgrade[0].innerHTML += "<div class='upgrade_button'>O5</div>";
         oven_multiplier += 2;
-        o5 = true
+        baker_multiplier *= 2;
+        upgrades_check["o5"] = true;
+        Pincome = document.getElementsByClassName("pointIncome");
+        Pincome[0].innerHTML = total_income;
     }
 
-    if (restaurants >= 10 && r1 === false) {
-        var Rupgrade1 = document.getElementsByClassName("show_upgrades");
-        Rupgrade1[0].innerHTML += "<div class='upgrade_button'>R1</div>";
+    if (restaurants >= 10 && upgrades_check["r1"] === false) {
+        upgrade[0].innerHTML += "<div class='upgrade_button'>R1</div>";
         restaurant_multiplier *= 2;
-        r1 = true
+        oven_multiplier *= 2;
+        upgrades_check["r1"] = true;
+        Pincome = document.getElementsByClassName("pointIncome");
+        Pincome[0].innerHTML = total_income;
     }
 
-    if (restaurants >= 25 && r2 === false) {
-        var Rupgrade2 = document.getElementsByClassName("show_upgrades");
-        Rupgrade2[0].innerHTML += "<div class='upgrade_button'>R2</div>";
+    if (restaurants >= 25 && upgrades_check["r2"] === false) {
+        upgrade[0].innerHTML += "<div class='upgrade_button'>R2</div>";
         restaurant_multiplier += 2;
-        r2 = true
+        oven_multiplier *= 2;
+        upgrades_check["r2"] = true;
+        Pincome = document.getElementsByClassName("pointIncome");
+        Pincome[0].innerHTML = total_income;
     }
 
-    if (restaurants >= 50 && r3 === false) {
-        var Rupgrade3 = document.getElementsByClassName("show_upgrades");
-        Rupgrade3[0].innerHTML += "<div class='upgrade_button'>R3</div>";
+    if (restaurants >= 50 && upgrades_check["r3"] === false) {
+        upgrade[0].innerHTML += "<div class='upgrade_button'>R3</div>";
         restaurant_multiplier += 2;
-        r3 = true
+        oven_multiplier *= 2;
+        upgrades_check["r3"] = true;
+        Pincome = document.getElementsByClassName("pointIncome");
+        Pincome[0].innerHTML = total_income;
     }
 
-    if (restaurants >= 75 && r4 === false) {
-        var Rupgrade4 = document.getElementsByClassName("show_upgrades");
-        Rupgrade4[0].innerHTML += "<div class='upgrade_button'>R4</div>";
+    if (restaurants >= 75 && upgrades_check["r4"] === false) {
+        upgrade[0].innerHTML += "<div class='upgrade_button'>R4</div>";
         restaurant_multiplier += 2;
-        r4 = true
+        oven_multiplier *= 2;
+        upgrades_check["r4"] = true;
+        Pincome = document.getElementsByClassName("pointIncome");
+        Pincome[0].innerHTML = total_income;
     }
-    if (restaurants >= 50 && r5 === false) {
-        var Rupgrade5 = document.getElementsByClassName("show_upgrades");
-        Rupgrade5[0].innerHTML += "<div class='upgrade_button'>R5</div>";
+    if (restaurants >= 100 && upgrades_check["r5"] === false) {
+        upgrade[0].innerHTML += "<div class='upgrade_button'>R5</div>";
         restaurant_multiplier += 2;
-        r5 = true
+        oven_multiplier *= 2;
+        upgrades_check["r5"] = true;
+        Pincome = document.getElementsByClassName("pointIncome");
+        Pincome[0].innerHTML = total_income;
     }
-
+    if (restaurant_chains >= 10 && upgrades_check["rc1"] === false) {
+        upgrade[0].innerHTML += "<div class='upgrade_button'>C1</div>";
+        restaurant_chains_multiplier *= 2;
+        restaurant_multiplier *= 2;
+        upgrades_check["rc1"] = true;
+        Pincome = document.getElementsByClassName("pointIncome");
+        Pincome[0].innerHTML = total_income;
+    }
+    if (restaurant_chains >= 25 && upgrades_check["rc2"] === false) {
+        upgrade[0].innerHTML += "<div class='upgrade_button'>C2</div>";
+        restaurant_chains_multiplier += 2;
+        restaurant_multiplier *= 2;
+        upgrades_check["rc2"] = true;
+        Pincome = document.getElementsByClassName("pointIncome");
+        Pincome[0].innerHTML = total_income;
+    }
+    if (restaurant_chains >= 50 && upgrades_check["rc3"] === false) {
+        upgrade[0].innerHTML += "<div class='upgrade_button'>C3</div>";
+        restaurant_chains_multiplier += 2;
+        restaurant_multiplier *= 2;
+        upgrades_check["rc3"] = true;
+        Pincome = document.getElementsByClassName("pointIncome");
+        Pincome[0].innerHTML = total_income;
+    }
+    if (restaurant_chains >= 75 && upgrades_check["rc4"] === false) {
+        upgrade[0].innerHTML += "<div class='upgrade_button'>C4</div>";
+        restaurant_chains_multiplier += 2;
+        restaurant_multiplier *= 2;
+        upgrades_check["rc4"] = true;
+        Pincome = document.getElementsByClassName("pointIncome");
+        Pincome[0].innerHTML = total_income;
+    }
+    if (restaurant_chains >= 100 && upgrades_check["rc5"] === false) {
+        upgrade[0].innerHTML += "<div class='upgrade_button'>C4</div>";
+        restaurant_chains_multiplier += 2;
+        restaurant_multiplier *= 2;
+        upgrades_check["rc5"] = true;
+        Pincome = document.getElementsByClassName("pointIncome");
+        Pincome[0].innerHTML = total_income;
+    }
 }, 100);
+
 
 function readCookie(name) {
     var nameEQ = name + "=";
